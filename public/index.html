@@ -51,7 +51,7 @@
   <script>
     async function fetchCompanies() {
       try {
-        const res = await fetch('/api/companies?limit=50');
+        const res = await fetch('/api/companies?limit=200');
         const companies = await res.json();
 
         const container = document.getElementById('companies');
