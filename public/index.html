@@ -5,12 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Company Ratings Dashboard</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .add-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+      transition: all 0.2s ease;
+      z-index: 1000;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .add-button:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+    }
+    .add-button:active {
+      transform: translateY(0);
+    }
+  </style>
   <!-- Auto refresh removed -->
 </head>
 <body>
+  <a href="/admin.html" class="add-button">
+    <span style="font-size: 20px;">➕</span>
+    <span>Add Rating</span>
+  </a>
+  
   <div class="container" id="companies">
     <h1>Company Ratings</h1>
-    <!-- Add / Update Rating button removed by request -->
     <div class="loading">Loading...</div>
   </div>
 
