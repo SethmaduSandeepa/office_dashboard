@@ -317,6 +317,14 @@
         originalName = data.company.name;
         originalSubcompany = data.company.subcompany;
         await load();
+        
+        // Clear form after successful save
+        document.getElementById('name').value = '';
+        document.getElementById('subcompany').value = '';
+        document.getElementById('rating').value = '';
+        document.getElementById('video').value = '';
+        originalName = null;
+        originalSubcompany = null;
       } catch (err) {
         resultDiv.style.color = '#ef4444';
         resultDiv.textContent = 'Error: ' + err.message;
