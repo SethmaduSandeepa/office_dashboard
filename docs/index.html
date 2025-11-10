@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Office Dashboard - Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      padding: 40px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    p {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+    .features {
+      text-align: left;
+      margin: 30px 0;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .features li {
+      margin: 10px 0;
+      font-size: 1.1rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: 15px 30px;
+      margin: 10px;
+      background: white;
+      color: #667eea;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+    }
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Office Dashboard</h1>
+    <p>A professional company ratings management system with authentication, CRUD operations, and video support.</p>
+    
+    <div class="features">
+      <h3>✨ Features:</h3>
+      <ul>
+        <li>📊 Company and subcompany rating management (0-100 scale)</li>
+        <li>🔐 Session-based authentication</li>
+        <li>📹 Video support (YouTube URLs and file uploads)</li>
+        <li>💼 Professional admin interface</li>
+        <li>📱 Responsive design optimized for 55" TV displays</li>
+        <li>🎨 Dark theme UI</li>
+      </ul>
+    </div>
+
+    <p><strong>This is a Node.js application that requires a server to run.</strong></p>
+    
+    <div style="margin: 30px 0;">
+      <a href="https://github.com/SethmaduSandeepa/office_dashboard" class="btn" target="_blank">
+        📂 View Source Code
+      </a>
+      <a href="https://github.com/SethmaduSandeepa/office_dashboard#installation" class="btn btn-secondary" target="_blank">
+        📖 Installation Guide
+      </a>
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 10px;">
+      <h3>🚀 Quick Start:</h3>
+      <p style="font-size: 1rem; text-align: left;">
+        <code>git clone https://github.com/SethmaduSandeepa/office_dashboard.git</code><br><br>
+        <code>cd office_dashboard</code><br><br>
+        <code>npm install</code><br><br>
+        <code>npm start</code>
+      </p>
+    </div>
+
+    <p style="margin-top: 30px; font-size: 0.9rem; opacity: 0.8;">
+      To deploy this application, use Render, Railway, or Heroku
+    </p>
+  </div>
+</body>
+</html>
