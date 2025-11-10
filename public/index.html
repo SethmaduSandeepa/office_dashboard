@@ -92,7 +92,11 @@
       }
     }
 
+    // Initial load
     fetchCompanies();
+    
+    // Auto-refresh every 30 seconds
+    setInterval(fetchCompanies, 30000);
   </script>
 </body>
 </html>
