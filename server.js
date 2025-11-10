@@ -33,10 +33,16 @@ const upload = multer({
 });
 
 // Connect to MongoDB
-const MONGODB_URI = 'mongodb+srv://sethmaduss_db_user:g4ZfAqWFTzgSyBGj@companyrating.jlyzepn.mongodb.net/?appName=companyrating';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://sethmaduss_db_user:g4ZfAqWFTzgSyBGj@companyrating.jlyzepn.mongodb.net/?appName=companyrating';
+console.log('Attempting to connect to MongoDB...');
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(() => {
+    console.log('✅ Connected to MongoDB successfully');
+  })
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err.message);
+    console.error('Full error:', err);
+  });
 
 // Updated schema: add subcompany and video
 const companySchema = new mongoose.Schema({
@@ -111,6 +117,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 🖥️ Dashboard API with limit/sort
 app.get('/api/companies', async (req, res) => {
   try {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ 
+        error: 'Database not connected', 
+        message: 'MongoDB connection is not ready. Please check MongoDB Atlas IP whitelist.' 
+      });
+    }
+
     const { limit, sort, order } = req.query;
     let limitN = parseInt(limit, 10);
     if (Number.isNaN(limitN) || limitN <= 0) limitN = 20; // default 20
@@ -134,7 +148,8 @@ app.get('/api/companies', async (req, res) => {
       .limit(limitN);
     res.json(companies);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch companies' });
+    console.error('Error fetching companies:', err);
+    res.status(500).json({ error: 'Failed to fetch companies', message: err.message });
   }
 });
 
