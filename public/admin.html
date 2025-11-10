@@ -375,23 +375,31 @@
 
     // Video modal functions
     function openVideoModal(url) {
+      const modal = document.getElementById('videoModal');
+      const container = document.getElementById('videoContainer');
+      
       // Check if it's an uploaded video (starts with /uploads/)
       if (url.startsWith('/uploads/')) {
-        // Open uploaded video in new tab
-        window.open(url, '_blank');
+        // Play uploaded video in modal
+        container.innerHTML = `<video controls autoplay style="width:100%; max-height:650px;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
+        modal.style.display = 'block';
         return;
       }
       
-      // Handle YouTube URLs - open in new tab
+      // Handle YouTube URLs - embed in modal
       if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
-        window.open(url, '_blank');
+        let videoId = '';
+        if (url.includes('youtube.com/watch')) {
+          videoId = new URL(url).searchParams.get('v');
+        } else if (url.includes('youtu.be/')) {
+          videoId = url.split('youtu.be/')[1].split('?')[0];
+        }
+        container.innerHTML = `<iframe width="100%" height="650" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        modal.style.display = 'block';
         return;
       }
       
       // For other video URLs, use modal
-      const modal = document.getElementById('videoModal');
-      const container = document.getElementById('videoContainer');
-      
       container.innerHTML = `<video controls autoplay style="width:100%; max-height:650px;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
       
       modal.style.display = 'block';
@@ -425,26 +433,12 @@
       const file = fileInput.files[0];
       const videoUrl = URL.createObjectURL(file);
       
-      // Open in new tab
-      const newTab = window.open();
-      newTab.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>${file.name} - Preview</title>
-          <style>
-            body { margin:0; padding:20px; background:#000; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-            video { max-width:100%; max-height:90vh; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
-          </style>
-        </head>
-        <body>
-          <video controls autoplay>
-            <source src="${videoUrl}" type="${file.type}">
-            Your browser does not support video playback.
-          </video>
-        </body>
-        </html>
-      `);
+      // Play in modal instead of new tab
+      const modal = document.getElementById('videoModal');
+      const container = document.getElementById('videoContainer');
+      
+      container.innerHTML = `<video controls autoplay style="width:100%; max-height:650px;"><source src="${videoUrl}" type="${file.type}">Your browser does not support video playback.</video>`;
+      modal.style.display = 'block';
     }
 
     // Video upload function
