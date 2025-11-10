@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Company Details</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .detail { max-width: 800px; margin: 30px auto; background:#111827; padding:24px; border-radius:16px; }
+    .meta { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    .meta div { flex:1; min-width:240px; text-align:left; }
+    .actions { margin-top: 16px; display:flex; gap:12px; flex-wrap:wrap; }
+    .btn { appearance:none; border:none; border-radius:10px; padding:10px 14px; font-size:16px; font-weight:700; cursor:pointer; }
+    .btn-primary { background:#3b82f6; color:white; }
+    .btn-danger { background:#b91c1c; color:#fee2e2; }
+    .btn-secondary { background:#1f2937; color:#e5e7eb; }
+    #result { margin-top: 12px; padding: 12px; border-radius: 10px; display:none; }
+    #result.success { background:#064e3b; color:#d1fae5; }
+    #result.error { background:#7f1d1d; color:#fee2e2; }
+    label { display:block; font-weight:600; color:#cbd5e1; margin-bottom:6px; text-align:left; }
+    input[type=number] { width:100%; padding:10px 12px; border:1px solid #334155; background:#0b1220; color:#e5e7eb; border-radius:10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="margin-bottom:16px;"><a href="/" style="color:#93c5fd;text-decoration:none;">← Back to Dashboard</a></div>
+    <h1>Company Details</h1>
+    <div class="detail" id="detail">
+      <div class="meta">
+        <div><div class="name" id="name"></div><div class="subcompany" id="sub"></div></div>
+        <div class="rating" id="rating"></div>
+      </div>
+      <div style="margin-top:16px;">
+        <label for="newRating">Update Rating (0–100)</label>
+        <input id="newRating" type="number" min="0" max="100" placeholder="e.g., 85" />
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">Save Update</button>
+        <button class="btn btn-danger" id="deleteBtn">Delete</button>
+        <a class="btn btn-secondary" href="/">Dashboard</a>
+      </div>
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <script>
+    function getParams() {
+      const u = new URL(window.location.href);
+      return {
+        name: u.searchParams.get('name') || '',
+        subcompany: u.searchParams.get('subcompany') || '',
+      };
+    }
+
+    function showMsg(type, text) {
+      const el = document.getElementById('result');
+      el.className = type;
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+
+    async function load() {
+      const { name, subcompany } = getParams();
+      if (!name || !subcompany) {
+        showMsg('error', 'Missing name or subcompany in URL');
+        return;
+      }
+      try {
+        const res = await fetch('/api/company?name=' + encodeURIComponent(name) + '&subcompany=' + encodeURIComponent(subcompany));
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Failed to load');
+        }
+        const co = await res.json();
+        document.getElementById('name').textContent = co.name;
+        document.getElementById('sub').textContent = co.subcompany;
+        document.getElementById('rating').innerHTML = co.rating + '<span class="max">/100</span>';
+        document.getElementById('newRating').value = co.rating;
+      } catch (e) {
+        showMsg('error', e.message);
+      }
+    }
+
+    async function save() {
+      const { name, subcompany } = getParams();
+      const rating = parseInt(document.getElementById('newRating').value, 10);
+      if (Number.isNaN(rating) || rating < 0 || rating > 100) {
+        showMsg('error', 'Rating must be between 0 and 100');
+        return;
+      }
+      try {
+        const res = await fetch('/api/update', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, subcompany, rating })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Update failed');
+        document.getElementById('rating').innerHTML = data.company.rating + '<span class="max">/100</span>';
+        showMsg('success', 'Updated successfully');
+      } catch (e) {
+        showMsg('error', e.message);
+      }
+    }
+
+    async function del() {
+      const { name, subcompany } = getParams();
+      if (!confirm('Delete ' + name + ' → ' + subcompany + '?')) return;
+      try {
+        const res = await fetch('/api/delete', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, subcompany })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Delete failed');
+        showMsg('success', 'Deleted. Redirecting...');
+        setTimeout(() => { window.location.href = '/'; }, 800);
+      } catch (e) {
+        showMsg('error', e.message);
+      }
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', save);
+    document.getElementById('deleteBtn').addEventListener('click', del);
+    load();
+  </script>
+</body>
+</html>

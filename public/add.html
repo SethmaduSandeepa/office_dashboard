@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add/Update Company Rating</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .form-wrap { max-width: 720px; margin: 40px auto; background:#111827; padding: 28px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+    .form-wrap h2 { margin: 0 0 20px; color:#e5e7eb; }
+    .field { margin-bottom: 16px; text-align: left; }
+    .field label { display:block; margin-bottom:8px; font-weight:600; color:#cbd5e1; }
+    .field input { width:100%; padding:12px 14px; font-size:16px; border:1px solid #334155; background:#0b1220; color:#e5e7eb; border-radius:10px; }
+    .actions { margin-top: 20px; display:flex; gap:12px; }
+    .btn { appearance:none; border:none; border-radius:10px; padding:12px 16px; font-size:16px; font-weight:700; cursor:pointer; }
+    .btn-primary { background:#3b82f6; color:white; }
+    .btn-primary:hover { background:#2563eb; }
+    .btn-secondary { background:#1f2937; color:#e5e7eb; }
+    #result { margin-top:16px; padding:12px 14px; border-radius:10px; display:none; }
+    #result.success { background:#064e3b; color:#d1fae5; }
+    #result.error { background:#7f1d1d; color:#fee2e2; }
+    .container h1 { margin-bottom: 10px; }
+    .nav { margin-bottom: 20px; }
+    .nav a { color:#93c5fd; text-decoration:none; }
+    .nav a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <script>
+    // Guard page: redirect to login if not authenticated
+    fetch('/api/me').then(r => r.json()).then(me => {
+      if (!me.authenticated) {
+        const nextUrl = encodeURIComponent(location.pathname);
+        location.href = '/login.html?next=' + nextUrl;
+      }
+    }).catch(() => {});
+  </script>
+  <div class="container">
+    <div class="nav"><a href="/">← Back to Dashboard</a></div>
+    <h1>Add / Update Company Rating</h1>
+
+    <div class="form-wrap">
+      <h2>Details</h2>
+      <div class="field">
+        <label for="name">Company</label>
+        <input id="name" type="text" placeholder="e.g., Acme Corp" />
+      </div>
+      <div class="field">
+        <label for="subcompany">Subcompany / Department</label>
+        <input id="subcompany" type="text" placeholder="e.g., Marketing, Colombo Branch" />
+      </div>
+      <div class="field">
+        <label for="rating">Rating (0–100)</label>
+        <input id="rating" type="number" min="0" max="100" placeholder="e.g., 85" />
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">Save to Dashboard</button>
+  <a class="btn btn-secondary" href="/" target="_blank" rel="noopener">Open Dashboard</a>
+        <button class="btn btn-secondary" onclick="logout()">Logout</button>
+      </div>
+
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <script>
+    function showMsg(type, text) {
+      const el = document.getElementById('result');
+      el.className = type;
+      el.textContent = text;
+      el.style.display = 'block';
+    }
+
+    async function save() {
+      const name = document.getElementById('name').value.trim();
+      const subcompany = document.getElementById('subcompany').value.trim();
+      const rating = parseInt(document.getElementById('rating').value, 10);
+
+      if (!name || !subcompany || Number.isNaN(rating) || rating < 0 || rating > 100) {
+        showMsg('error', 'All fields are required. Rating must be between 0 and 100.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, subcompany, rating })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showMsg('success', `Saved: ${data.company.name} → ${data.company.subcompany} (Rating: ${data.company.rating}/100)`);
+          document.getElementById('name').value = '';
+          document.getElementById('subcompany').value = '';
+          document.getElementById('rating').value = '';
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (e) {
+        showMsg('error', `Error: ${e.message}`);
+      }
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', save);
+    async function logout() { try { await fetch('/api/logout', { method: 'POST' }); location.href = '/login.html'; } catch (e) {} }
+  </script>
+</body>
+</html>

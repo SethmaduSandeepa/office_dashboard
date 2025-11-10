@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin | Company Ratings</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    :root {
+      --bg:#0b1220; --panel:#111827; --muted:#94a3b8; --primary:#3b82f6; --danger:#ef4444; --text:#e5e7eb; --border:#334155;
+    }
+    body { background:#0f172a; color:var(--text); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:#0b1220; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10; }
+    .brand { font-weight:800; letter-spacing:0.3px; }
+    .top-actions { display:flex; gap:10px; align-items:center; }
+    .btn { appearance:none; border:none; border-radius:10px; padding:10px 14px; font-size:14px; font-weight:700; cursor:pointer; }
+    .btn-primary { background:var(--primary); color:white; }
+    .btn-secondary { background:#1f2937; color:var(--text); }
+    .btn-danger { background:#7f1d1d; color:#fee2e2; }
+    .layout { max-width:1200px; margin:20px auto; padding:0 20px; display:grid; grid-template-columns: 2fr 1.4fr; gap:20px; }
+    .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(0,0,0,0.25); }
+    .card h3 { margin:0 0 10px; }
+    .muted { color:var(--muted); font-size:0.9rem; }
+    .field { margin-bottom:14px; }
+    .field label { display:block; margin-bottom:6px; font-weight:600; color:#cbd5e1; }
+    .field input { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font-size:16px; }
+    .grid-two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+    .table { width:100%; border-collapse:collapse; }
+    .table th, .table td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); }
+    .table th { color:#cbd5e1; font-weight:700; }
+    .row { cursor:pointer; }
+    .row:hover { background:#0b1220; }
+    .tools { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .tools input { padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#0b1220; color:#93c5fd; font-weight:700; }
+    #toast { position:fixed; bottom:16px; right:16px; background:#1f2937; color:#e5e7eb; padding:12px 14px; border-radius:10px; border:1px solid var(--border); display:none; }
+    
+    /* Custom file input styling - Professional drag & drop zone */
+    .file-upload-wrapper { position:relative; display:block; width:100%; }
+    .file-upload-wrapper input[type="file"] { position:absolute; left:-9999px; }
+    .file-upload-label { 
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+      width:100%; padding:32px 20px; 
+      background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border:2px dashed #475569; border-radius:12px; 
+      cursor:pointer; font-weight:600; font-size:14px;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .file-upload-label:hover { 
+      background:linear-gradient(135deg, #334155 0%, #1e293b 100%);
+      border-color:#3b82f6; 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), inset 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .file-upload-icon { 
+      width:48px; height:48px; 
+      background:#3b82f6; 
+      border-radius:50%; 
+      display:flex; align-items:center; justify-content:center;
+      transition: all 0.3s ease;
+    }
+    .file-upload-label:hover .file-upload-icon {
+      background:#60a5fa;
+      transform: scale(1.1);
+    }
+    .file-upload-text { color:#cbd5e1; font-size:15px; }
+    .file-upload-hint { color:#64748b; font-size:12px; font-weight:400; }
+    .file-name { 
+      margin-top:10px; padding:10px 14px;
+      font-size:13px; color:#93c5fd; 
+      background:#0b1220; border-radius:8px;
+      border:1px solid #334155;
+      display:flex; align-items:center; gap:8px;
+    }
+    .file-name-icon { color:#10b981; font-size:16px; }
+    
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <script>
+    // Track original keys when editing an existing entry
+    let originalName = null;
+    let originalSubcompany = null;
+    // Guard page: redirect to login if not authenticated
+    fetch('/api/me').then(r => r.json()).then(me => {
+      if (!me.authenticated) {
+        const nextUrl = encodeURIComponent(location.pathname);
+        location.href = '/login.html?next=' + nextUrl;
+      }
+    }).catch(() => {
+      // If the API is unreachable, keep page but show nothing special
+    });
+  </script>
+  <header class="topbar">
+    <div class="brand">Company Ratings — Admin</div>
+    <div class="top-actions">
+      <a class="btn btn-secondary" href="/" target="_blank" rel="noopener">Open Dashboard</a>
+      <button class="btn btn-secondary" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="card" id="listCard">
+      <h3>Companies <span class="muted" id="count"></span></h3>
+      <div class="tools">
+        <input id="search" type="text" placeholder="Search name or subcompany..." />
+        <span class="muted">Click a row to edit</span>
+      </div>
+      <table class="table" id="table">
+        <thead>
+          <tr><th>Company</th><th>Subcompany</th><th>Rating</th><th>Video</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h3>Edit / Add</h3>
+      <div class="field">
+        <label for="name">Company</label>
+        <input id="name" type="text" placeholder="e.g., SethMadu Solutions" />
+      </div>
+      <div class="field">
+        <label for="subcompany">Subcompany / Department</label>
+        <input id="subcompany" type="text" placeholder="e.g., Marketing, Colombo Branch" />
+      </div>
+      <div class="field">
+        <label for="rating">Rating (0–100)</label>
+        <input id="rating" type="number" min="0" max="100" placeholder="e.g., 85" />
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="submitForm()">Save / Update</button>
+        <button class="btn btn-danger" onclick="deleteEntry()">Delete</button>
+      </div>
+      <div id="result" class="muted" style="margin-top:10px;"></div>
+      
+      <hr style="border:none; border-top:1px solid #334155; margin:20px 0;" />
+      
+      <div class="field">
+        <label for="video">📹 Video (optional)</label>
+        <div style="display:flex; gap:8px;">
+          <input id="video" type="text" placeholder="Paste YouTube URL or upload file below" style="flex:1;" />
+          <button class="btn btn-secondary" onclick="previewVideo()" title="Preview video" style="padding:10px 16px;">▶ Preview</button>
+        </div>
+        <small style="color:#94a3b8; display:block; margin-top:4px;">Option 1: Paste YouTube or direct video link, then click Preview to test</small>
+      </div>
+      
+      <div class="field" style="margin-top:12px;">
+        <label for="videoFile" style="color:#cbd5e1; margin-bottom:12px;">Or upload from computer:</label>
+        <div class="file-upload-wrapper">
+          <input id="videoFile" type="file" accept="video/*" onchange="updateFileName()" />
+          <label for="videoFile" class="file-upload-label">
+            <div class="file-upload-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <div class="file-upload-text" id="fileLabel">Click to browse or drag & drop</div>
+            <div class="file-upload-hint">MP4, AVI, MOV, WMV (Max 100MB)</div>
+          </label>
+        </div>
+        <div id="fileName" class="file-name" style="display:none;"></div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="btn btn-secondary" onclick="previewLocalVideo()" style="flex:1; padding:12px;">
+            <span style="font-size:16px;">▶</span> Preview
+          </button>
+          <button class="btn btn-secondary" onclick="uploadVideo()" style="flex:1; padding:12px;">
+            <span style="font-size:16px;">📤</span> Upload to Server
+          </button>
+        </div>
+        <div id="uploadProgress" style="margin-top:8px; color:#94a3b8; display:none;"></div>
+      </div>
+    </section>
+  </div>
+  <div id="toast"></div>
+
+  <!-- Video Modal -->
+  <div id="videoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; padding:40px;">
+    <div style="max-width:1200px; margin:0 auto; position:relative;">
+      <button onclick="closeVideoModal()" style="position:absolute; top:-30px; right:0; background:#ef4444; color:white; border:none; border-radius:8px; padding:8px 16px; cursor:pointer; font-weight:700;">Close ✕</button>
+      <div id="videoContainer" style="background:#000; border-radius:12px; overflow:hidden;"></div>
+    </div>
+  </div>
+
+  <script>
+    // UI helpers
+    function toast(msg, type='info') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      el.style.borderColor = type==='error' ? '#b91c1c' : '#334155';
+      setTimeout(()=>{ el.style.display='none'; }, 1800);
+    }
+
+    async function logout() {
+      try { await fetch('/api/logout', { method: 'POST' }); location.href = '/login.html'; } catch (e) {}
+    }
+
+    // Data & rendering
+    let all = [];
+    function render(list) {
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML='';
+      document.getElementById('count').textContent = `(${list.length})`;
+      list.forEach(co => {
+        const tr = document.createElement('tr');
+        tr.className='row';
+        
+        // Video button
+        const videoBtn = document.createElement('button');
+        if (co.video && co.video.trim()) {
+          videoBtn.className = 'btn btn-secondary';
+          videoBtn.style.padding = '4px 8px';
+          videoBtn.style.fontSize = '12px';
+          videoBtn.textContent = '▶';
+          videoBtn.title = 'Play video';
+          videoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openVideoModal(co.video);
+          });
+        } else {
+          videoBtn.textContent = '—';
+          videoBtn.style.border = 'none';
+          videoBtn.style.background = 'transparent';
+          videoBtn.style.color = '#64748b';
+        }
+        
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-danger';
+        deleteBtn.style.padding = '4px 8px';
+        deleteBtn.style.fontSize = '12px';
+        deleteBtn.textContent = '✕';
+        deleteBtn.title = 'Delete';
+        deleteBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteInline(co.name, co.subcompany);
+        });
+        
+        const td1 = document.createElement('td');
+        td1.textContent = co.name;
+        const td2 = document.createElement('td');
+        td2.textContent = co.subcompany;
+        const td3 = document.createElement('td');
+        td3.innerHTML = `<span class="pill">${co.rating}</span>`;
+        const td4 = document.createElement('td');
+        td4.appendChild(videoBtn);
+        const td5 = document.createElement('td');
+        td5.appendChild(deleteBtn);
+        
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tr.appendChild(td4);
+        tr.appendChild(td5);
+        
+        tr.addEventListener('click', (e) => {
+          document.getElementById('name').value = co.name;
+          document.getElementById('subcompany').value = co.subcompany;
+          document.getElementById('rating').value = co.rating;
+          document.getElementById('video').value = co.video || '';
+          originalName = co.name;
+          originalSubcompany = co.subcompany;
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function load() {
+      try {
+        const res = await fetch('/api/companies?limit=200&sort=name&order=asc');
+        all = await res.json();
+        render(all);
+      } catch (e) {
+        toast('Failed to load list', 'error');
+      }
+    }
+
+    function filterList(q) {
+      const t = q.trim().toLowerCase();
+      if (!t) return all;
+      return all.filter(co => `${co.name} ${co.subcompany}`.toLowerCase().includes(t));
+    }
+    document.getElementById('search').addEventListener('input', (e) => {
+      const list = filterList(e.target.value);
+      render(list);
+    });
+
+    async function submitForm() {
+      const name = document.getElementById('name').value.trim();
+      const subcompany = document.getElementById('subcompany').value.trim();
+      const rating = parseInt(document.getElementById('rating').value, 10);
+      const video = document.getElementById('video').value.trim();
+
+      const resultDiv = document.getElementById('result');
+      if (!name || !subcompany || Number.isNaN(rating) || rating < 0 || rating > 100) {
+        resultDiv.style.color = '#ef4444';
+        resultDiv.textContent = 'All fields required. Rating must be 0–100.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, subcompany, rating, video, originalName, originalSubcompany })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Unknown error');
+        resultDiv.style.color = '#10b981';
+        resultDiv.textContent = `Saved: ${data.company.name} → ${data.company.subcompany} (${data.company.rating}/100)`;
+        toast('Saved');
+        // Update originals to new keys after successful save
+        originalName = data.company.name;
+        originalSubcompany = data.company.subcompany;
+        await load();
+      } catch (err) {
+        resultDiv.style.color = '#ef4444';
+        resultDiv.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    async function deleteEntry() {
+      const name = document.getElementById('name').value.trim();
+      const subcompany = document.getElementById('subcompany').value.trim();
+      const resultDiv = document.getElementById('result');
+      if (!name || !subcompany) {
+        resultDiv.style.color = '#ef4444';
+        resultDiv.textContent = 'Select an entry first (company and subcompany).';
+        return;
+      }
+      if (!confirm(`Delete ${name} → ${subcompany}?`)) return;
+      try {
+        const res = await fetch('/api/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, subcompany })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Delete failed');
+        resultDiv.style.color = '#10b981';
+        resultDiv.textContent = `Deleted ${data.deletedCount} entrie(s).`;
+        toast('Deleted');
+        document.getElementById('name').value = '';
+        document.getElementById('subcompany').value = '';
+        document.getElementById('rating').value = '';
+        originalName = null;
+        originalSubcompany = null;
+        await load();
+      } catch (err) {
+        resultDiv.style.color = '#ef4444';
+        resultDiv.textContent = 'Error: ' + err.message;
+      }
+    }
+
+    async function deleteInline(name, subcompany) {
+      if (!confirm(`Delete ${name} → ${subcompany}?`)) return;
+      try {
+        const res = await fetch('/api/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, subcompany })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Delete failed');
+        toast('Deleted');
+        await load();
+      } catch (err) {
+        toast('Error: ' + err.message, 'error');
+      }
+    }
+
+    // Video modal functions
+    function openVideoModal(url) {
+      // Check if it's an uploaded video (starts with /uploads/)
+      if (url.startsWith('/uploads/')) {
+        // Open uploaded video in new tab
+        window.open(url, '_blank');
+        return;
+      }
+      
+      // Handle YouTube URLs - open in new tab
+      if (url.includes('youtube.com/watch') || url.includes('youtu.be/')) {
+        window.open(url, '_blank');
+        return;
+      }
+      
+      // For other video URLs, use modal
+      const modal = document.getElementById('videoModal');
+      const container = document.getElementById('videoContainer');
+      
+      container.innerHTML = `<video controls autoplay style="width:100%; max-height:650px;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
+      
+      modal.style.display = 'block';
+    }
+
+    function closeVideoModal() {
+      const modal = document.getElementById('videoModal');
+      const container = document.getElementById('videoContainer');
+      container.innerHTML = '';
+      modal.style.display = 'none';
+    }
+
+    // Preview video from URL field
+    function previewVideo() {
+      const videoUrl = document.getElementById('video').value.trim();
+      if (!videoUrl) {
+        toast('Please enter a video URL first', 'error');
+        return;
+      }
+      openVideoModal(videoUrl);
+    }
+
+    // Preview local video file before uploading
+    function previewLocalVideo() {
+      const fileInput = document.getElementById('videoFile');
+      if (!fileInput.files || !fileInput.files[0]) {
+        toast('Please select a video file first', 'error');
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      const videoUrl = URL.createObjectURL(file);
+      
+      // Open in new tab
+      const newTab = window.open();
+      newTab.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${file.name} - Preview</title>
+          <style>
+            body { margin:0; padding:20px; background:#000; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+            video { max-width:100%; max-height:90vh; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+          </style>
+        </head>
+        <body>
+          <video controls autoplay>
+            <source src="${videoUrl}" type="${file.type}">
+            Your browser does not support video playback.
+          </video>
+        </body>
+        </html>
+      `);
+    }
+
+    // Video upload function
+    async function uploadVideo() {
+      const fileInput = document.getElementById('videoFile');
+      const progressDiv = document.getElementById('uploadProgress');
+      const videoInput = document.getElementById('video');
+      
+      if (!fileInput.files || !fileInput.files[0]) {
+        toast('Please select a video file first', 'error');
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('video', file);
+      
+      progressDiv.style.display = 'block';
+      progressDiv.textContent = 'Uploading... Please wait';
+      
+      try {
+        const res = await fetch('/api/upload-video', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Upload failed');
+        
+        // Set the uploaded video path in the video URL field
+        videoInput.value = data.videoPath;
+        progressDiv.textContent = '✓ Upload complete! Path saved.';
+        progressDiv.style.color = '#10b981';
+        toast('Video uploaded successfully');
+        
+        setTimeout(() => {
+          progressDiv.style.display = 'none';
+        }, 3000);
+      } catch (err) {
+        progressDiv.textContent = '✗ Upload failed: ' + err.message;
+        progressDiv.style.color = '#ef4444';
+        toast('Upload failed: ' + err.message, 'error');
+      }
+    }
+
+    // Update file name display
+    function updateFileName() {
+      const fileInput = document.getElementById('videoFile');
+      const fileNameDiv = document.getElementById('fileName');
+      const fileLabel = document.getElementById('fileLabel');
+      
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        fileNameDiv.innerHTML = `<span class="file-name-icon">✓</span> ${file.name} <span style="color:#64748b;">(${sizeMB} MB)</span>`;
+        fileNameDiv.style.display = 'flex';
+        fileLabel.textContent = 'Click to change file';
+      } else {
+        fileNameDiv.style.display = 'none';
+        fileLabel.textContent = 'Click to browse or drag & drop';
+      }
+    }
+
+    // initial load
+    load();
+  </script>
+</body>
+</html>
