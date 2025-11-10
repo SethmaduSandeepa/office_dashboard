@@ -48,7 +48,7 @@ mongoose.connect(MONGODB_URI)
 const companySchema = new mongoose.Schema({
   name: { type: String, required: true },       // Main company
   subcompany: { type: String, required: true }, // Subcompany (e.g., department, branch)
-  rating: { type: Number, required: true, min: 0 }, // LKR amount (no max limit)
+  rating: { type: Number, required: true, min: 0, max: 5000 }, // LKR amount (0-5000)
   video: { type: String, required: false }      // Video URL (optional)
 });
 
@@ -173,8 +173,8 @@ app.get('/api/company', async (req, res) => {
 app.post('/api/update', requireAuth, async (req, res) => {
   const { name, subcompany, rating, video, originalName, originalSubcompany } = req.body || {};
   
-  if (!name || !subcompany || typeof rating !== 'number' || rating < 0 || rating > 100) {
-    return res.status(400).json({ error: 'Invalid input. All fields required. Rating: 0–100.' });
+  if (!name || !subcompany || typeof rating !== 'number' || rating < 0 || rating > 5000) {
+    return res.status(400).json({ error: 'Invalid input. All fields required. Amount: 0–5000.' });
   }
 
   try {
