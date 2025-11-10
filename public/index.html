@@ -80,7 +80,7 @@
               <div class="name">${co.name}</div>
               <div class="subcompany">${co.subcompany}</div>
             </div>
-            <div class="rating">${co.rating}<span class="max">/100</span></div>
+            <div class="rating">Rs. ${co.rating.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
           `;
           list.appendChild(div);
         });

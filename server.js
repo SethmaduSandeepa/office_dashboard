@@ -48,7 +48,7 @@ mongoose.connect(MONGODB_URI)
 const companySchema = new mongoose.Schema({
   name: { type: String, required: true },       // Main company
   subcompany: { type: String, required: true }, // Subcompany (e.g., department, branch)
-  rating: { type: Number, required: true, min: 0, max: 100 },
+  rating: { type: Number, required: true, min: 0 }, // LKR amount (no max limit)
   video: { type: String, required: false }      // Video URL (optional)
 });
 

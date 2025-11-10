@@ -126,8 +126,8 @@
         <input id="subcompany" type="text" placeholder="e.g., Marketing, Colombo Branch" />
       </div>
       <div class="field">
-        <label for="rating">Rating (0–100)</label>
-        <input id="rating" type="number" min="0" max="100" placeholder="e.g., 85" />
+        <label for="rating">Amount (LKR)</label>
+        <input id="rating" type="number" min="0" step="0.01" placeholder="e.g., 150000.00" />
       </div>
       <div class="actions">
         <button class="btn btn-primary" onclick="submitForm()">Save / Update</button>
@@ -245,7 +245,7 @@
         const td2 = document.createElement('td');
         td2.textContent = co.subcompany;
         const td3 = document.createElement('td');
-        td3.innerHTML = `<span class="pill">${co.rating}</span>`;
+        td3.innerHTML = `<span class="pill">Rs. ${co.rating.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
         const td4 = document.createElement('td');
         td4.appendChild(videoBtn);
         const td5 = document.createElement('td');
