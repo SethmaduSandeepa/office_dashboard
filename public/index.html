@@ -121,11 +121,11 @@
           }
           showPage(currentPage);
         }, 4000); // 4 seconds per page
-        // Repeat animation every 2 minutes
+        // Repeat animation every 5 minutes
         repeatTimeout = setTimeout(() => {
           clearInterval(animationInterval);
           startAnimation();
-        }, 120000);
+        }, 300000); // 5 minutes
       }
     }
 
