@@ -86,17 +86,62 @@
         div.className = 'company-card';
         div.style.cursor = 'pointer';
         div.title = 'Open details';
-        div.addEventListener('click', () => {
-          const url = '/company.html?name=' + encodeURIComponent(co.name) + '&subcompany=' + encodeURIComponent(co.subcompany);
-          window.location.href = url;
-        });
         div.innerHTML = `
           <div class="card-left">
             <div class="name">${co.name}</div>
             <div class="subcompany">${co.subcompany}</div>
           </div>
-          <div class="rating">Rs. ${co.rating.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+          <div class="rating" style="cursor:pointer;" id="price-${co.name}-${co.subcompany}">Rs. ${co.rating.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
         `;
+        // Inline price edit
+        div.querySelector('.rating').addEventListener('click', function(e) {
+          e.stopPropagation();
+          const priceDiv = this;
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.min = 0;
+          input.max = 5000;
+          input.step = '0.01';
+          input.value = co.rating;
+          input.style.width = '90px';
+          input.style.fontSize = '1rem';
+          input.style.marginRight = '8px';
+          const saveBtn = document.createElement('button');
+          saveBtn.textContent = 'Save';
+          saveBtn.style.padding = '4px 10px';
+          saveBtn.style.fontSize = '1rem';
+          saveBtn.style.background = '#3b82f6';
+          saveBtn.style.color = 'white';
+          saveBtn.style.border = 'none';
+          saveBtn.style.borderRadius = '6px';
+          saveBtn.style.cursor = 'pointer';
+          priceDiv.innerHTML = '';
+          priceDiv.appendChild(input);
+          priceDiv.appendChild(saveBtn);
+          saveBtn.onclick = async function(ev) {
+            ev.stopPropagation();
+            const newPrice = parseFloat(input.value);
+            if (isNaN(newPrice) || newPrice < 0 || newPrice > 5000) {
+              alert('Amount must be between 0 and 5000');
+              return;
+            }
+            // Send update to backend (no auth)
+            try {
+              const res = await fetch('/api/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: co.name, subcompany: co.subcompany, rating: newPrice, video: co.video })
+              });
+              const data = await res.json();
+              if (!data.success) throw new Error(data.error || 'Unknown error');
+              priceDiv.innerHTML = `Rs. ${newPrice.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+              co.rating = newPrice;
+            } catch (err) {
+              alert('Error updating price: ' + err.message);
+              priceDiv.innerHTML = `Rs. ${co.rating.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            }
+          };
+        });
         list.appendChild(div);
       });
       container.appendChild(list);
