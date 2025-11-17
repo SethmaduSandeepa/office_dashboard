@@ -49,54 +49,94 @@
   </div>
 
   <script>
+    let allCompanies = [];
+    let currentPage = 0;
+    const pageSize = 20; // companies per page
+    let animationInterval = null;
+    let repeatTimeout = null;
+
     async function fetchCompanies() {
       try {
         const res = await fetch('/api/companies?limit=200');
-        const companies = await res.json();
-
-        const container = document.getElementById('companies');
-        container.innerHTML = '<h1>Company Ratings</h1>';
-        container.classList.add('compact');
-
-        if (companies.length === 0) {
-          container.innerHTML += '<p class="empty">No companies added yet.</p>';
-          return;
-        }
-
-        const list = document.createElement('div');
-        list.className = 'company-list';
-
-        companies.forEach(co => {
-          const div = document.createElement('div');
-          div.className = 'company-card';
-          div.style.cursor = 'pointer';
-          div.title = 'Open details';
-          div.addEventListener('click', () => {
-            const url = '/company.html?name=' + encodeURIComponent(co.name) + '&subcompany=' + encodeURIComponent(co.subcompany);
-            window.location.href = url;
-          });
-          div.innerHTML = `
-            <div class="card-left">
-              <div class="name">${co.name}</div>
-              <div class="subcompany">${co.subcompany}</div>
-            </div>
-            <div class="rating">Rs. ${co.rating.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-          `;
-          list.appendChild(div);
-        });
-
-        container.appendChild(list);
+        allCompanies = await res.json();
+        showPage(0);
       } catch (err) {
         console.error(err);
         document.getElementById('companies').innerHTML = '<p class="error">Error loading data.</p>';
       }
     }
 
+    function showPage(page) {
+      const container = document.getElementById('companies');
+      container.innerHTML = '<h1>Company Ratings</h1>';
+      container.classList.add('compact');
+      if (allCompanies.length === 0) {
+        container.innerHTML += '<p class="empty">No companies added yet.</p>';
+        return;
+      }
+      const list = document.createElement('div');
+      list.className = 'company-list';
+      const start = page * pageSize;
+      const end = Math.min(start + pageSize, allCompanies.length);
+      allCompanies.slice(start, end).forEach(co => {
+        const div = document.createElement('div');
+        div.className = 'company-card';
+        div.style.cursor = 'pointer';
+        div.title = 'Open details';
+        div.addEventListener('click', () => {
+          const url = '/company.html?name=' + encodeURIComponent(co.name) + '&subcompany=' + encodeURIComponent(co.subcompany);
+          window.location.href = url;
+        });
+        div.innerHTML = `
+          <div class="card-left">
+            <div class="name">${co.name}</div>
+            <div class="subcompany">${co.subcompany}</div>
+          </div>
+          <div class="rating">Rs. ${co.rating.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+        `;
+        list.appendChild(div);
+      });
+      container.appendChild(list);
+      // Show page indicator if more than one page
+      if (allCompanies.length > pageSize) {
+        const indicator = document.createElement('div');
+        indicator.style.textAlign = 'center';
+        indicator.style.margin = '16px 0';
+        indicator.style.color = '#94a3b8';
+        indicator.textContent = `Showing ${start + 1}-${end} of ${allCompanies.length} companies`;
+        container.appendChild(indicator);
+      }
+    }
+
+    function startAnimation() {
+      if (animationInterval) clearInterval(animationInterval);
+      if (repeatTimeout) clearTimeout(repeatTimeout);
+      currentPage = 0;
+      showPage(currentPage);
+      if (allCompanies.length > pageSize) {
+        animationInterval = setInterval(() => {
+          currentPage++;
+          if (currentPage >= Math.ceil(allCompanies.length / pageSize)) {
+            currentPage = 0;
+          }
+          showPage(currentPage);
+        }, 4000); // 4 seconds per page
+        // Repeat animation every 2 minutes
+        repeatTimeout = setTimeout(() => {
+          clearInterval(animationInterval);
+          startAnimation();
+        }, 120000);
+      }
+    }
+
     // Initial load
     fetchCompanies();
-    
     // Auto-refresh every 30 seconds
     setInterval(fetchCompanies, 30000);
+    // Start animation after first load
+    setTimeout(() => {
+      startAnimation();
+    }, 1000);
   </script>
 </body>
 </html>
