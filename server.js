@@ -5,7 +5,7 @@ const session = require('express-session');
 const multer = require('multer');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Configure multer for video uploads
 const storage = multer.diskStorage({
