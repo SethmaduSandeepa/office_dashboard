@@ -271,3 +271,34 @@ app.get('/clear', async (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${PORT}`);
 });
+
+// --- WebSocket server for Show Ratings real-time updates ---
+const http = require('http');
+const WebSocket = require('ws');
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+let showRatingsValue = false;
+
+wss.on('connection', function connection(ws) {
+  ws.on('message', function incoming(message) {
+    try {
+      const data = JSON.parse(message);
+      if (data.type === 'showRatingsUpdate') {
+        showRatingsValue = !!data.value;
+        // Broadcast to all clients
+        wss.clients.forEach(function each(client) {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'showRatingsUpdate', value: showRatingsValue }));
+          }
+        });
+      }
+    } catch (e) {}
+  });
+  // Send current value on connect
+  ws.send(JSON.stringify({ type: 'showRatingsUpdate', value: showRatingsValue }));
+});
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`WebSocket server running at ws://0.0.0.0:${PORT}`);
+});

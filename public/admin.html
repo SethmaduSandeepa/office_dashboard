@@ -120,9 +120,12 @@
             }
             toggle.checked = localStorage.getItem('showRatingsDashboard') === 'true';
             saveBtn.addEventListener('click', function() {
-              localStorage.setItem('showRatingsDashboard', toggle.checked ? 'true' : 'false');
-              toast('Dashboard ratings ' + (toggle.checked ? 'enabled' : 'disabled'));
-            });
+                localStorage.setItem('showRatingsDashboard', toggle.checked ? 'true' : 'false');
+                if (window.showRatingsSocket && window.showRatingsSocket.sendShowRatingsUpdate) {
+                  window.showRatingsSocket.sendShowRatingsUpdate(toggle.checked);
+                }
+                toast('Dashboard ratings ' + (toggle.checked ? 'enabled' : 'disabled'));
+              });
           });
         </script>
         </label>
