@@ -148,6 +148,13 @@
     setTimeout(() => {
       startAnimation();
     }, 1000);
+
+    // Listen for changes to Show Ratings setting from admin page
+    window.addEventListener('storage', function(event) {
+      if (event.key === 'showRatingsDashboard') {
+        fetchCompanies(); // re-render with new ratings visibility
+      }
+    });
   </script>
 </body>
 </html>
