@@ -172,9 +172,13 @@ app.get('/api/company', async (req, res) => {
 // ✏️ Add/Update via UI
 app.post('/api/update', requireAuth, async (req, res) => {
   const { name, subcompany, rating, video, originalName, originalSubcompany } = req.body || {};
-  
-  if (!name || !subcompany || typeof rating !== 'number' || rating < 0 || rating > 5000) {
-    return res.status(400).json({ error: 'Invalid input. All fields required. Amount: 0–5000.' });
+
+  // Validate only if provided
+  if (rating !== undefined && (typeof rating !== 'number' || rating < 0 || rating > 5000)) {
+    return res.status(400).json({ error: 'Amount (LKR) must be between 0 and 5000 if provided.' });
+  }
+  if (!name && !subcompany && rating === undefined && !video) {
+    return res.status(400).json({ error: 'At least one field must be provided.' });
   }
 
   try {
