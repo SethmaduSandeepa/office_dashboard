@@ -268,9 +268,7 @@ app.get('/clear', async (req, res) => {
   res.send('✅ All entries cleared!');
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running at http://0.0.0.0:${PORT}`);
-});
+// app.listen removed; use server.listen below for both Express and WebSocket
 
 // --- WebSocket server for Show Ratings real-time updates ---
 const http = require('http');
