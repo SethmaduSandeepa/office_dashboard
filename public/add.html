@@ -77,9 +77,12 @@
       const subcompany = document.getElementById('subcompany').value.trim();
       const rating = parseInt(document.getElementById('rating').value, 10);
 
-      if (!name || !subcompany || Number.isNaN(rating) || rating < 0 || rating > 100) {
-        showMsg('error', 'All fields are required. Rating must be between 0 and 100.');
-        return;
+      // Only validate rating if provided
+      if (document.getElementById('rating').value.trim() !== '') {
+        if (Number.isNaN(rating) || rating < 0 || rating > 100) {
+          showMsg('error', 'Rating must be between 0 and 100.');
+          return;
+        }
       }
 
       try {
