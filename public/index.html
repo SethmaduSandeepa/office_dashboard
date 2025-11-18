@@ -38,9 +38,9 @@
   <!-- Auto refresh removed -->
 </head>
 <body style="background: #0f172a; color: #e5e7eb;">
-    <div style="position:fixed;top:24px;right:24px;z-index:1002;">
+    <div style="position:fixed;top:24px;right:24px;z-index:1002;display:none;" id="dashboardRatingsToggle">
       <label style="font-size:16px;cursor:pointer;">
-        <input type="checkbox" id="toggleRatings" style="margin-right:8px;vertical-align:middle;" /> Show Ratings
+        <input type="checkbox" id="toggleRatingsDashboard" style="margin-right:8px;vertical-align:middle;" /> Show Ratings
       </label>
     </div>
   <!-- Logo in top left corner -->
@@ -88,13 +88,14 @@
       list.className = 'company-list';
       const start = page * pageSize;
       const end = Math.min(start + pageSize, allCompanies.length);
+      const showRatings = localStorage.getItem('showRatingsDashboard') === 'true';
       allCompanies.slice(start, end).forEach(co => {
         const div = document.createElement('div');
         div.className = 'company-card';
         div.style.cursor = 'pointer';
         div.title = 'Open details';
         let amountHtml = '';
-        if (typeof co.rating === 'number' && co.rating >= 0 && co.rating <= 5000) {
+        if (showRatings && typeof co.rating === 'number' && co.rating >= 0 && co.rating <= 5000) {
           amountHtml = `<div class="rating">Rs. ${co.rating.toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>`;
         }
         div.innerHTML = `
