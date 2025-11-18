@@ -80,7 +80,7 @@
       // Only validate rating if provided
       if (document.getElementById('rating').value.trim() !== '') {
         if (Number.isNaN(rating) || rating < 0 || rating > 100) {
-          showMsg('error', 'Rating must be between 0 and 100.');
+          showMsg('error', 'Amount (LKR) must be between 0 and 5000. Amount is optional.');
           return;
         }
       }
