@@ -10,6 +10,7 @@
     "express-session": "^1.18.2",
     "mongodb": "^6.20.0",
     "mongoose": "^7.6.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "ws": "^8.13.0"
   }
 }
