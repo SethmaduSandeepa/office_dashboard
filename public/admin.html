@@ -113,12 +113,13 @@
           // Sync Show Ratings toggle with dashboard via localStorage
           document.addEventListener('DOMContentLoaded', function() {
             const toggle = document.getElementById('toggleRatingsAdmin');
+            const saveBtn = document.getElementById('saveRatingsToggle');
             // Set initial value from localStorage, default to false
             if (localStorage.getItem('showRatingsDashboard') === null) {
               localStorage.setItem('showRatingsDashboard', 'false');
             }
             toggle.checked = localStorage.getItem('showRatingsDashboard') === 'true';
-            toggle.addEventListener('change', function() {
+            saveBtn.addEventListener('click', function() {
               localStorage.setItem('showRatingsDashboard', toggle.checked ? 'true' : 'false');
               toast('Dashboard ratings ' + (toggle.checked ? 'enabled' : 'disabled'));
             });
